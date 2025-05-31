@@ -151,3 +151,87 @@ class Category:
         self._store = store
         if store is not None:
             store.add_category(self)
+
+class Product:
+    def __init__(self, name: str, price: int, quantity: int):
+        if not isinstance(name, str):
+            raise TypeError("Name must be a string.")
+        if not isinstance(price, int):
+            raise TypeError("Price must be an integer.")
+        if not isinstance(quantity, int):
+            raise TypeError("Quantity must be an integer.")
+        self._id = None
+        self._name = name
+        self._price = price
+        self._quantity = quantity
+        self._category = None
+        self._store = None
+
+    def to_dict(self) -> dict:
+        return {'id': self._id, 'name': self._name,
+            'price': self._price, 'quantity': self._quantity}
+
+    def __str__(self) -> str:
+        return str({'class': type(self).__name__} | self.to_dict() | {
+            'category': self._category.to_dict() if self._category else None,
+            'store': self._store.to_dict() if self._store else None})
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, new: str) -> None:
+        if not isinstance(new, str):
+            raise TypeError("Name must be a string.")
+        self._name = new
+
+    @property
+    def price(self) -> int:
+        return self._price
+
+    @price.setter
+    def price(self, new: int) -> None:
+        if not isinstance(new, int):
+            raise TypeError("Price must be an integer.")
+        self._price = new
+
+    @property
+    def quantity(self) -> int:
+        return self._quantity
+
+    @quantity.setter
+    def quantity(self, new: int) -> None:
+        if not isinstance(new, int):
+            raise TypeError("Quantity must be an integer.")
+        self._quantity = new
+
+    @property
+    def category(self) -> Category:
+        return self._category
+
+    def set_category(self, category: Category | None) -> None:
+        if not isinstance(category, Category | None):
+            raise TypeError(f"Expected Category or None instance, got {type(category).__name__}")
+        if self._category is not None:
+            self._category.remove_product   (self)
+        self._category = category
+        if category is not None:
+            category.add_product(self)
+
+    @property
+    def store(self) -> Store:
+        return self._store
+
+    def set_store(self, store: Store | None) -> None:
+        if not isinstance(store, Store | None):
+            raise TypeError(f"Expected Store or None instance, got {type(store).__name__}")
+        if self._store is not None:
+            self._store.remove_product(self)
+        self._store = store
+        if store is not None:
+            store.add_product(self)
