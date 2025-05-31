@@ -235,3 +235,24 @@ class Product:
         self._store = store
         if store is not None:
             store.add_product(self)
+
+
+if __name__ == "__main__":
+    store1 = Store("Store", "111 Main St")
+    category1 = Category("Food")
+    category2 = Category("Clothing")
+    product1 = Product("Sausage", 1050, 200)
+    product2 = Product("T-shirt", 1500, 50)
+
+    store1.add_category(category1, category2)
+    category1.add_product(product1)
+    category2.add_product(product2)
+
+    store1.add_product(product1, product2)
+
+    print(store1)
+    print(category1)
+    print(product1)
+
+    store1.remove_category(category1)
+    print(category1)
