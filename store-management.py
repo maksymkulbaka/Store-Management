@@ -494,7 +494,19 @@ class Product:
             store.add_product(self)
 
 class User:
+    """Represents a base user with name, surname, and optional ID."""
+
     def __init__(self, name: str, surname: str):
+        """
+        Initializes a User instance.
+
+        Args:
+            name (str): The user's first name.
+            surname (str): The user's last name.
+
+        Raises:
+            ValueError: If name or surname is not a valid non-empty string.
+        """
         if not isinstance(name, str) or not name.strip():
             raise ValueError("Name must be a non-empty string.")
         if not isinstance(surname, str) or not surname.strip():
@@ -504,46 +516,114 @@ class User:
         self._surname = surname
 
     def to_dict(self) -> dict:
+        """
+        Returns user data as a dictionary.
+
+        Returns:
+            dict: A dictionary with user ID, name, and surname.
+        """
         return {'id': self._id, 'name': self._name, 'surname': self._surname}
 
     def __str__(self) -> str:
+        """
+        Returns a string representation of the user with class name.
+
+        Returns:
+            str: Stringified user data including class name.
+        """
         return str({'class': type(self).__name__, **self.to_dict()})
 
     @property
     def id(self) -> int:
+        """
+        Gets the user's ID.
+
+        Returns:
+            int: The user's ID.
+        """
         return self._id
 
     @property
     def name(self) -> str:
+        """
+        Gets the user's first name.
+
+        Returns:
+            str: The user's first name.
+        """
         return self._name
 
     @name.setter
     def name(self, name: str):
+        """
+        Sets the user's first name.
+
+        Args:
+            name (str): New first name.
+        """
         if not isinstance(name, str) or not name.strip():
             raise ValueError("Name must be a non-empty string.")
         self._name = name
 
     @property
     def surname(self) -> str:
+        """
+        Gets the user's last name.
+
+        Returns:
+            str: The user's last name.
+        """
         return self._surname
 
     @surname.setter
     def surname(self, surname: str):
+        """
+        Sets the user's last name.
+
+        Args:
+            surname (str): New last name.
+        """
         if not isinstance(surname, str) or not surname.strip():
             raise ValueError("Surname must be a non-empty string.")
         self._surname = surname
 
 class Cashier(User):
+    """Represents a cashier, inherited from User."""
 
     def __init__(self, name: str, surname: str):
+        """
+        Initializes a Cashier instance.
+
+        Args:
+            name (str): The cashier's first name.
+            surname (str): The cashier's last name.
+        """
         super().__init__(name, surname)
 
     def __str__(self) -> str:
+        """
+        Returns a string representation of the cashier with class name.
+
+        Returns:
+            str: Stringified cashier data including class name.
+        """
         return str({'class': type(self).__name__, **self.to_dict()})
 
 class Customer(User):
+    """Represents a customer with phone number, cashback, and purchase history."""
 
     def __init__(self, name: str, surname: str, phone: int):
+        """
+        Initializes a Customer instance.
+
+        Args:
+            name (str): The customer's first name.
+            surname (str): The customer's last name.
+            phone (int): The customer's phone number.
+
+         Raises:
+            ValueError: If phone is not a positive integer.
+        """
         super().__init__(name, surname)
         if not isinstance(phone, int) or phone <= 0:
             raise ValueError("Phone must be a positive integer.")
@@ -554,6 +634,12 @@ class Customer(User):
         self._purchases = []
 
     def to_dict(self) -> dict:
+        """
+        Returns customer data as a dictionary (excluding purchases).
+
+        Returns:
+            dict: Dictionary with user info and customer-specific fields.
+        """
         return {
             **super().to_dict(),
             'phone': self._phone,
@@ -561,6 +647,12 @@ class Customer(User):
             'percent': self._percent}
 
     def __str__(self) -> str:
+        """
+        Returns a string representation of the customer including purchases.
+
+        Returns:
+            str: Stringified customer data with class name and purchases.
+        """
         return str({
             'class': type(self).__name__,
             **self.to_dict(),
@@ -569,42 +661,102 @@ class Customer(User):
 
     @property
     def phone(self) -> int:
+        """
+        Gets the customer's phone number.
+
+        Returns:
+            int: Phone number.
+        """
         return self._phone
 
     @phone.setter
     def phone(self, phone: int):
+        """
+        Sets the customer's phone number.
+
+        Args:
+            phone (int): New phone number.
+        """
         if not isinstance(phone, int) or phone <= 0:
             raise ValueError("Phone must be a positive integer.")
         self._phone = phone
 
     @property
     def purchases(self) -> list:
+        """
+        Gets the list of customer purchases.
+
+        Returns:
+            list: List of purchases.
+        """
         return self._purchases
 
     def add_purchase(self, order):
+        """
+        Adds a new purchase to the customer's history.
+
+        Args:
+            order: An order object or identifier to be added to purchases.
+        """
         self._purchases.append(order)
 
     @property
     def cashback(self) -> int:
+        """
+        Gets the current cashback balance.
+
+        Returns:
+            int: Cashback amount.
+        """
         return self._cashback
 
     @cashback.setter
     def cashback(self, cashback: int):
+        """
+        Sets the cashback amount.
+
+        Args:
+            cashback (int): New cashback balance.
+        """
         if not isinstance(cashback, int) or cashback < 0:
             raise ValueError("Cashback must be a non-negative integer.")
         self._cashback = cashback
 
     @property
     def percent(self) -> int:
+        """
+        Gets the cashback percentage.
+
+        Returns:
+            int: Cashback percent.
+        """
         return self._percent
 
     @percent.setter
     def percent(self, percent: int):
+        """
+        Sets the cashback percentage.
+
+        Args:
+            percent (int): New cashback percent.
+        """
         if not isinstance(percent, int) or not (0 <= percent <= 100):
             raise ValueError("Percent must be an integer between 0 and 100.")
         self._percent = percent
 
     def withdraw_cashback(self, amount: int) -> bool:
+        """
+        Attempts to withdraw cashback.
+
+        Args:
+            amount (int): Amount to withdraw.
+
+        Returns:
+            bool: True if successful, False if insufficient balance.
+
+        Raises:
+            ValueError: If amount is negative.
+        """
         if amount < 0:
             raise ValueError("Withdrawal amount must be non-negative.")
         if amount <= self._cashback:
@@ -615,6 +767,14 @@ class Customer(User):
         return False
 
     def accrue_cashback(self, order_amount: int):
+        """
+        Accrues cashback from a purchase based on the cashback percent.
+
+        Args:
+            order_amount (int): Total amount of the purchase.
+        Raises:
+            ValueError: If order amount is negative.
+        """
         if order_amount < 0:
             raise ValueError("Order amount must be non-negative.")
         earned_cashback = (order_amount * self._percent) // 100
