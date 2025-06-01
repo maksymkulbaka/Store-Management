@@ -533,6 +533,14 @@ class User:
             raise ValueError("Surname must be a non-empty string.")
         self._surname = surname
 
+class Cashier(User):
+
+    def __init__(self, name: str, surname: str):
+        super().__init__(name, surname)
+
+    def __str__(self) -> str:
+        return str({'class': type(self).__name__, **self.to_dict()})
+
 
 if __name__ == "__main__":
     store1 = Store("Store", "111 Main St")
