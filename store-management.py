@@ -541,6 +541,84 @@ class Cashier(User):
     def __str__(self) -> str:
         return str({'class': type(self).__name__, **self.to_dict()})
 
+class Customer(User):
+
+    def __init__(self, name: str, surname: str, phone: int):
+        super().__init__(name, surname)
+        if not isinstance(phone, int) or phone <= 0:
+            raise ValueError("Phone must be a positive integer.")
+        super().__init__(name, surname)
+        self._phone = phone
+        self._cashback = 0
+        self._percent = 1
+        self._purchases = []
+
+    def to_dict(self) -> dict:
+        return {
+            **super().to_dict(),
+            'phone': self._phone,
+            'cashback': self._cashback,
+            'percent': self._percent}
+
+    def __str__(self) -> str:
+        return str({
+            'class': type(self).__name__,
+            **self.to_dict(),
+            'purchases': self._purchases
+        })
+
+    @property
+    def phone(self) -> int:
+        return self._phone
+
+    @phone.setter
+    def phone(self, phone: int):
+        if not isinstance(phone, int) or phone <= 0:
+            raise ValueError("Phone must be a positive integer.")
+        self._phone = phone
+
+    @property
+    def purchases(self) -> list:
+        return self._purchases
+
+    def add_purchase(self, order):
+        self._purchases.append(order)
+
+    @property
+    def cashback(self) -> int:
+        return self._cashback
+
+    @cashback.setter
+    def cashback(self, cashback: int):
+        if not isinstance(cashback, int) or cashback < 0:
+            raise ValueError("Cashback must be a non-negative integer.")
+        self._cashback = cashback
+
+    @property
+    def percent(self) -> int:
+        return self._percent
+
+    @percent.setter
+    def percent(self, percent: int):
+        if not isinstance(percent, int) or not (0 <= percent <= 100):
+            raise ValueError("Percent must be an integer between 0 and 100.")
+        self._percent = percent
+
+    def withdraw_cashback(self, amount: int) -> bool:
+        if amount < 0:
+            raise ValueError("Withdrawal amount must be non-negative.")
+        if amount <= self._cashback:
+            self._cashback -= amount
+        if amount <= self._cashback:
+            self._cashback -= amount
+            return True
+        return False
+
+    def accrue_cashback(self, order_amount: int):
+        if order_amount < 0:
+            raise ValueError("Order amount must be non-negative.")
+        earned_cashback = (order_amount * self._percent) // 100
+        self._cashback += earned_cashback
 
 if __name__ == "__main__":
     store1 = Store("Store", "111 Main St")
