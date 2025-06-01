@@ -179,7 +179,6 @@ class Store:
                 self._products.remove(product)
                 product.set_store(None)
 
-
 class Category:
     """Represents a Category belonging to a Store and containing Products."""
     def __init__(self, name: str):
@@ -316,7 +315,6 @@ class Category:
         self._store = store
         if store is not None:
             store.add_category(self)
-
 
 class Product:
     """Represents a Product belonging to a Category and a Store."""
