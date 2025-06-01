@@ -780,6 +780,12 @@ class Customer(User):
 
 class ShoppingCart:
     def __init__(self, product: Product):
+        """
+        Initializes a shopping cart with a single product.
+
+        Args:
+            product (Product): The initial product to add to the cart.
+        """
         if not isinstance(product, Product):
             raise TypeError("product must be an instance of Product")
 
@@ -793,50 +799,119 @@ class ShoppingCart:
         self._shop = None
 
     def to_dict(self) -> dict:
+        """
+        Returns a dictionary representation of the cart (excluding product list).
+
+        Returns:
+            dict: Cart data including ID, cashier, customer, cashback, total, and shop.
+        """
         return {'id': self._id, 'employee': self._cashier, 'customer': self._customer,
                 'cashback': self._cashback, 'total': self._total, 'shop': self._shop}
 
     def __str__(self):
+        """
+        Returns a string representation of the shopping cart including products.
+
+        Returns:
+            str: Human-readable string of the cart details.
+        """
         return str({'class': type(self).__name__, **self.to_dict(),
             'products': [product.to_dict() for product in self._products]})
 
     @property
     def id(self) -> int:
+        """
+        Returns the cart ID.
+
+        Returns:
+            int: Unique identifier for the cart.
+        """
         return self._id
 
     @property
     def products(self) -> list:
+        """
+        Returns the list of products in the cart.
+
+        Returns:
+            list: List of Product instances.
+        """
         return self._products
 
     @property
     def cashier(self) -> Cashier:
+        """
+        Returns the assigned cashier.
+
+        Returns:
+            Cashier: The cashier handling the cart.
+        """
         return self._cashier
 
     @cashier.setter
     def cashier(self, new):
+        """
+        Assigns a new cashier to the cart.
+
+        Args:
+            new (Cashier): The cashier to assign.
+        """
         if not isinstance(new, Cashier):
             raise TypeError("cashier must be an instance of Cashier")
         self._cashier = new
 
     @property
     def customer(self) -> Customer:
+        """
+        Returns the customer associated with the cart.
+
+        Returns:
+            Customer: The assigned customer.
+        """
         return self._customer
 
     @property
     def cashback(self) -> int:
+        """
+        Returns the cashback applied to the cart.
+
+        Returns:
+            int: Total cashback amount.
+        """
         return self._cashback
 
     @property
     def total(self) -> int:
+        """
+        Returns the total price after applying cashback.
+
+        Returns:
+            int: Total cart value.
+        """
         return self._total
 
     def add_product(self, product):
+        """
+        Adds a product to the cart and updates the total price.
+
+        Args:
+            product (Product): The product to add.
+        """
         if not isinstance(product, Product):
             raise TypeError("product must be an instance of Product")
         self._products.append(product)
         self._total += product.price
 
     def add_customer(self, phone: int):
+        """
+        Searches for a customer by phone number and assigns them to the cart.
+
+        Args:
+            phone (int): Customer's phone number.
+
+        Returns:
+            bool: True if customer is found and assigned, False otherwise.
+        """
         if not isinstance(phone, int) or len(str(phone)) < 7:
             raise ValueError("phone must be a valid integer phone number")
 
@@ -847,6 +922,15 @@ class ShoppingCart:
         return False
 
     def withdraw_cashback(self, amount):
+        """
+        Applies cashback from the customer's account to reduce the total price.
+
+        Args:
+            amount (int): Amount of cashback to apply.
+
+        Returns:
+            bool: True if cashback applied successfully, False otherwise.
+        """
         if not isinstance(amount, int) or amount <= 0:
             raise ValueError("amount must be a positive integer")
 
@@ -857,6 +941,14 @@ class ShoppingCart:
         return False
 
     def make_payment(self, card_number: int, expiration_date: list, cvv: int):
+        """
+        Placeholder method for processing payment.
+
+        Args:
+            card_number (int): Credit/debit card number.
+            expiration_date (list): [month, year] of card expiration.
+            cvv (int): Card verification value.
+        """
 
         #TODO: Finish the method
         if not isinstance(card_number, int) or len(str(card_number)) < 13:
