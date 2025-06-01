@@ -778,6 +778,100 @@ class Customer(User):
         earned_cashback = (order_amount * self._percent) // 100
         self._cashback += earned_cashback
 
+class ShoppingCart:
+    def __init__(self, product: Product):
+        if not isinstance(product, Product):
+            raise TypeError("product must be an instance of Product")
+
+        self._id = None
+        self._products = [product]
+        self._cashier = None
+        self._customer = None
+        self._cashback = 0
+        self._total = product.price
+        self._database = None
+        self._shop = None
+
+    def to_dict(self) -> dict:
+        return {'id': self._id, 'employee': self._cashier, 'customer': self._customer,
+                'cashback': self._cashback, 'total': self._total, 'shop': self._shop}
+
+    def __str__(self):
+        return str({'class': type(self).__name__, **self.to_dict(),
+            'products': [product.to_dict() for product in self._products]})
+
+    @property
+    def id(self) -> int:
+        return self._id
+
+    @property
+    def products(self) -> list:
+        return self._products
+
+    @property
+    def cashier(self) -> Cashier:
+        return self._cashier
+
+    @cashier.setter
+    def cashier(self, new):
+        if not isinstance(new, Cashier):
+            raise TypeError("cashier must be an instance of Cashier")
+        self._cashier = new
+
+    @property
+    def customer(self) -> Customer:
+        return self._customer
+
+    @property
+    def cashback(self) -> int:
+        return self._cashback
+
+    @property
+    def total(self) -> int:
+        return self._total
+
+    def add_product(self, product):
+        if not isinstance(product, Product):
+            raise TypeError("product must be an instance of Product")
+        self._products.append(product)
+        self._total += product.price
+
+    def add_customer(self, phone: int):
+        if not isinstance(phone, int) or len(str(phone)) < 7:
+            raise ValueError("phone must be a valid integer phone number")
+
+        for customer in self._database.customers:
+            if customer.phone == phone:
+                self._customer = customer
+                return True
+        return False
+
+    def withdraw_cashback(self, amount):
+        if not isinstance(amount, int) or amount <= 0:
+            raise ValueError("amount must be a positive integer")
+
+        if self._customer and self._customer.withdraw_cashback(amount):
+            self._cashback += amount
+            self._total -= amount
+            return True
+        return False
+
+    def make_payment(self, card_number: int, expiration_date: list, cvv: int):
+
+        #TODO: Finish the method
+        if not isinstance(card_number, int) or len(str(card_number)) < 13:
+            raise ValueError("Invalid card number")
+        if not (isinstance(expiration_date, list) and len(expiration_date) == 2):
+            raise ValueError("expiration_date must be a list of [month, year]")
+        if not (1 <= expiration_date[0] <= 12):
+            raise ValueError("Invalid expiration month")
+        if not isinstance(expiration_date[1], int) or expiration_date[1] < 2000:
+            raise ValueError("Invalid expiration year")
+        if not isinstance(cvv, int) or len(str(cvv)) != 3:
+            raise ValueError("CVV must be a 3-digit integer")
+
+        pass
+
 if __name__ == "__main__":
     store1 = Store("Store", "111 Main St")
     category1 = Category("Food")
