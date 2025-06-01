@@ -493,6 +493,46 @@ class Product:
         if store is not None:
             store.add_product(self)
 
+class User:
+    def __init__(self, name: str, surname: str):
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("Name must be a non-empty string.")
+        if not isinstance(surname, str) or not surname.strip():
+            raise ValueError("Surname must be a non-empty string.")
+        self._id = None
+        self._name = name
+        self._surname = surname
+
+    def to_dict(self) -> dict:
+        return {'id': self._id, 'name': self._name, 'surname': self._surname}
+
+    def __str__(self) -> str:
+        return str({'class': type(self).__name__, **self.to_dict()})
+
+    @property
+    def id(self) -> int:
+        return self._id
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, name: str):
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("Name must be a non-empty string.")
+        self._name = name
+
+    @property
+    def surname(self) -> str:
+        return self._surname
+
+    @surname.setter
+    def surname(self, surname: str):
+        if not isinstance(surname, str) or not surname.strip():
+            raise ValueError("Surname must be a non-empty string.")
+        self._surname = surname
+
 
 if __name__ == "__main__":
     store1 = Store("Store", "111 Main St")
