@@ -994,6 +994,7 @@ class ShoppingCart:
         self._total = product.price
         self._store = None
         self._database = None
+        self._status = "pending"
 
     def to_dict(self) -> dict:
         """
@@ -1003,7 +1004,7 @@ class ShoppingCart:
             dict: Cart data including ID, cashier, customer, cashback, total, and shop.
         """
         return {'id': self._id, 'employee': self._cashier, 'customer': self._customer,
-                'cashback': self._cashback, 'total': self._total, 'store': self._store}
+                'cashback': self._cashback, 'total': self._total, 'store': self._store, 'status': self._status}
 
     def __str__(self):
         """
@@ -1087,6 +1088,16 @@ class ShoppingCart:
         """
         return self._total
 
+    @property
+    def status(self) -> str:
+        """
+        Returns the current transaction status.
+
+        Returns:
+            str: Status of the transaction.
+        """
+        return self._status
+
     def add_product(self, product):
         """
         Adds a product to the cart and updates the total price.
@@ -1148,18 +1159,43 @@ class ShoppingCart:
         """
 
         #TODO: Finish the method
-        if not isinstance(card_number, int) or len(str(card_number)) < 13:
-            raise ValueError("Invalid card number")
-        if not (isinstance(expiration_date, list) and len(expiration_date) == 2):
-            raise ValueError("expiration_date must be a list of [month, year]")
-        if not (1 <= expiration_date[0] <= 12):
-            raise ValueError("Invalid expiration month")
-        if not isinstance(expiration_date[1], int) or expiration_date[1] < 2000:
-            raise ValueError("Invalid expiration year")
-        if not isinstance(cvv, int) or len(str(cvv)) != 3:
-            raise ValueError("CVV must be a 3-digit integer")
+        try:
+            if not isinstance(card_number, int) or len(str(card_number)) < 13:
+                raise ValueError("Invalid card number")
+            if not (isinstance(expiration_date, list) and len(expiration_date) == 2):
+                raise ValueError("expiration_date must be a list of [month, year]")
+            if not (1 <= expiration_date[0] <= 12):
+                raise ValueError("Invalid expiration month")
+            if not isinstance(expiration_date[1], int) or expiration_date[1] < 2000:
+                raise ValueError("Invalid expiration year")
+            if not isinstance(cvv, int) or len(str(cvv)) != 3:
+                raise ValueError("CVV must be a 3-digit integer")
 
-        pass
+            if not self._customer:
+                raise ValueError("No customer assigned to the cart.")
+
+            for product in self._products:
+                if product.quantity < 1:
+                    raise ValueError(f"Product {product.name} is out of stock.")
+                product.quantity -= 1
+
+            self._customer.accrue_cashback(self._total)
+
+            order_record = {
+                'products': [p.to_dict() for p in self._products],
+                'total': self._total,
+                'cashback_used': self._cashback
+            }
+            self._customer.add_purchase(order_record)
+
+            self._status = "success"
+            print("Payment successful.")
+            return True
+
+        except Exception as e:
+            self._status = "failed"
+            print(f"Payment failed: {str(e)}")
+            return False
 
 if __name__ == "__main__":
     db = Database("may_market")
@@ -1172,6 +1208,7 @@ if __name__ == "__main__":
     store1.add_category(category1, category2)
     category1.add_product(product1)
     category2.add_product(product2)
+    cart = ShoppingCart(product1)
 
     store1.add_product(product1, product2)
 
@@ -1181,3 +1218,5 @@ if __name__ == "__main__":
 
     store1.remove_category(category1)
     print(category1)
+    print(cart.to_dict())
+    print("Transaction status:", cart.status)
