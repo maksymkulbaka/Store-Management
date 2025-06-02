@@ -1,5 +1,16 @@
 class Database:
+    """Represents a centralized system to manage all entities related to a retail environment.
+
+    Stores references to stores, categories, products, cashiers, customers, and purchases.
+    Provides methods to add, remove, and query these entities.
+    """
+
     def __init__(self, name: str):
+        """Initialize a new Database instance.
+
+        Args:
+            name (str): The name of the database.
+        """
         self._name = name
         self._stores = []
         self._categories = []
@@ -10,9 +21,22 @@ class Database:
 
     @property
     def stores(self) -> tuple:
+        """Returns all registered Store instances.
+
+        Returns:
+            tuple: Tuple containing all Store instances in the database.
+        """
         return tuple(self._stores)
 
     def add_stores(self, *stores: 'Store'):
+        """Add one or more Store instances to the database.
+
+        Args:
+            *stores (Store): Variable number of Store instances to add.
+
+        Raises:
+            TypeError: If any argument is not a Store instance.
+        """
         for store in stores:
             if not isinstance(store, Store):
                 raise TypeError(f"Expected Store instance, got {type(store).__name__}")
@@ -22,19 +46,40 @@ class Database:
                 store.set_database(self)
 
     def remove_stores(self, *stores: 'Store'):
+        """Remove one or more Store instances from the database.
+
+        Args:
+            *stores (Store): Variable number of Store instances to remove.
+
+        Raises:
+            TypeError: If any argument is not a Store instance.
+        """
         for store in stores:
             if not isinstance(store, Store):
                 raise TypeError(f"Expected Store instance, got {type(store).__name__}")
         for store in stores:
-            if store not in self._stores:
+            if store in self._stores:
                 self._stores.remove(store)
                 store.set_database(None)
 
     @property
     def categories(self) -> tuple:
+        """Returns all registered Category instances.
+
+        Returns:
+            tuple: Tuple containing all Category instances in the database.
+        """
         return tuple(self._categories)
 
     def add_categories(self, *categories: 'Category'):
+        """Add one or more Category instances to the database.
+
+        Args:
+            *categories (Category): Variable number of Category instances to add.
+
+        Raises:
+            TypeError: If any argument is not a Category instance.
+        """
         for category in categories:
             if not isinstance(category, Category):
                 raise TypeError(f"Expected Category instance, got {type(category).__name__}")
@@ -44,19 +89,40 @@ class Database:
                 category.set_database(self)
 
     def remove_categories(self, *categories: 'Category'):
+        """Remove one or more Category instances from the database.
+
+        Args:
+            *categories (Category): Variable number of Category instances to remove.
+
+        Raises:
+            TypeError: If any argument is not a Category instance.
+        """
         for category in categories:
             if not isinstance(category, Category):
                 raise TypeError(f"Expected Category instance, got {type(category).__name__}")
         for category in categories:
-            if category not in self._categories:
+            if category in self._categories:
                 self._categories.remove(category)
                 category.set_database(None)
 
     @property
     def products(self) -> tuple:
+        """Returns all registered Product instances.
+
+        Returns:
+            tuple: Tuple containing all Product instances in the database.
+        """
         return tuple(self._products)
 
     def add_products(self, *products: 'Product'):
+        """Add one or more Product instances to the database.
+
+        Args:
+            *products (Product): Variable number of Product instances to add.
+
+        Raises:
+            TypeError: If any argument is not a Product instance.
+        """
         for product in products:
             if not isinstance(product, Product):
                 raise TypeError(f"Expected Product instance, got {type(product).__name__}")
@@ -66,19 +132,40 @@ class Database:
                 product.set_database(self)
 
     def remove_products(self, *products: 'Product'):
+        """Remove one or more Product instances from the database.
+
+        Args:
+            *products (Product): Variable number of Product instances to remove.
+
+        Raises:
+            TypeError: If any argument is not a Product instance.
+        """
         for product in products:
             if not isinstance(product, Product):
                 raise TypeError(f"Expected Product instance, got {type(product).__name__}")
         for product in products:
-            if product not in self._products:
+            if product in self._products:
                 self._products.remove(product)
                 product.set_database(None)
 
     @property
     def cashiers(self) -> tuple:
+        """Returns all registered Cashier instances.
+
+        Returns:
+            tuple: Tuple containing all Cashier instances in the database.
+        """
         return tuple(self._cashiers)
 
     def add_cashiers(self, *cashiers: 'Cashier'):
+        """Add one or more Cashier instances to the database.
+
+        Args:
+            *cashiers (Cashier): Variable number of Cashier instances to add.
+
+        Raises:
+            TypeError: If any argument is not a Cashier instance.
+        """
         for cashier in cashiers:
             if not isinstance(cashier, Cashier):
                 raise TypeError(f"Expected Cashier instance, got {type(cashier).__name__}")
@@ -88,19 +175,40 @@ class Database:
                 cashier.set_database(self)
 
     def remove_cashiers(self, *cashiers: 'Cashier'):
+        """Remove one or more Cashier instances from the database.
+
+        Args:
+            *cashiers (Cashier): Variable number of Cashier instances to remove.
+
+        Raises:
+            TypeError: If any argument is not a Cashier instance.
+        """
         for cashier in cashiers:
             if not isinstance(cashier, Cashier):
                 raise TypeError(f"Expected Cashier instance, got {type(cashier).__name__}")
         for cashier in cashiers:
-            if cashier not in self._cashiers:
+            if cashier in self._cashiers:
                 self._cashiers.remove(cashier)
                 cashier.set_database(None)
 
     @property
     def customers(self) -> tuple:
+        """Returns all registered Customer instances.
+
+        Returns:
+            tuple: Tuple containing all Customer instances in the database.
+        """
         return tuple(self._customers)
 
     def add_customers(self, *customers: 'Customer'):
+        """Add one or more Customer instances to the database.
+
+        Args:
+            *customers (Customer): Variable number of Customer instances to add.
+
+        Raises:
+            TypeError: If any argument is not a Customer instance.
+        """
         for customer in customers:
             if not isinstance(customer, Customer):
                 raise TypeError(f"Expected Customer instance, got {type(customer).__name__}")
@@ -110,15 +218,31 @@ class Database:
                 customer.set_database(self)
 
     def remove_customers(self, *customers: 'Customer'):
+        """Remove one or more Customer instances from the database.
+
+        Args:
+            *customers (Customer): Variable number of Customer instances to remove.
+
+        Raises:
+            TypeError: If any argument is not a Customer instance.
+        """
         for customer in customers:
             if not isinstance(customer, Customer):
                 raise TypeError(f"Expected Customer instance, got {type(customer).__name__}")
         for customer in customers:
-            if customer not in self._customers:
+            if customer in self._customers:
                 self._customers.remove(customer)
                 customer.set_database(None)
 
     def find_customer_by_phone(self, phone):
+        """Search for a Customer instance by phone number.
+
+        Args:
+            phone (Any): Phone number to search for.
+
+        Returns:
+            Customer | bool: The matching Customer instance if found, otherwise False.
+        """
         for customer in self._customers:
             if customer.phone == phone:
                 return customer
@@ -1157,8 +1281,6 @@ class ShoppingCart:
             expiration_date (list): [month, year] of card expiration.
             cvv (int): Card verification value.
         """
-
-        #TODO: Finish the method
         try:
             if not isinstance(card_number, int) or len(str(card_number)) < 13:
                 raise ValueError("Invalid card number")
