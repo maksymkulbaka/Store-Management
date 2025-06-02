@@ -145,6 +145,7 @@ class Store:
         self._address = address
         self._categories = []
         self._products = []
+        self._database = None
 
     def to_dict(self) -> dict:
         """Return a dictionary representation of the Store.
@@ -305,6 +306,20 @@ class Store:
                 self._products.remove(product)
                 product.set_store(None)
 
+    @property
+    def database(self) -> Database:
+        return self._database
+
+    def set_database(self, database: Database | None):
+        if not isinstance(database, Database | None):
+            raise TypeError(f"Expected Database or None instance, got {type(Database).__name__}")
+        if self._database is not None:
+            self._database.remove_stores(self)
+        self._database = database
+        if database is not None:
+            if self not in self._database.stores:
+                database.add_stores(self)
+
 class Category:
     """Represents a Category belonging to a Store and containing Products."""
     def __init__(self, name: str):
@@ -322,6 +337,7 @@ class Category:
         self._name = name
         self._products = []
         self._store = None
+        self._database = None
 
     def to_dict(self) -> dict:
         """Return a dictionary representation of the Category.
@@ -442,6 +458,20 @@ class Category:
         if store is not None:
             store.add_category(self)
 
+    @property
+    def database(self) -> Database:
+        return self._database
+
+    def set_database(self, database: Database | None):
+        if not isinstance(database, Database | None):
+            raise TypeError(f"Expected Database or None instance, got {type(Database).__name__}")
+        if self._database is not None:
+            self._database.remove_categories(self)
+        self._database = database
+        if database is not None:
+            if self not in self._database.categories:
+                database.add_categories(self)
+
 class Product:
     """Represents a Product belonging to a Category and a Store."""
     def __init__(self, name: str, price: int, quantity: int):
@@ -467,6 +497,7 @@ class Product:
         self._quantity = quantity
         self._category = None
         self._store = None
+        self._database = None
 
     def to_dict(self) -> dict:
         """Return a dictionary representation of the Product.
@@ -617,6 +648,20 @@ class Product:
         if store is not None:
             store.add_product(self)
 
+    @property
+    def database(self) -> Database:
+        return self._database
+
+    def set_database(self, database: Database | None):
+        if not isinstance(database, Database | None):
+            raise TypeError(f"Expected Database or None instance, got {type(Database).__name__}")
+        if self._database is not None:
+            self._database.remove_products(self)
+        self._database = database
+        if database is not None:
+            if self not in self._database.products:
+                database.add_products(self)
+
 class User:
     """Represents a base user with name, surname, and optional ID."""
 
@@ -638,6 +683,7 @@ class User:
         self._id = None
         self._name = name
         self._surname = surname
+        self._database = None
 
     def to_dict(self) -> dict:
         """
@@ -653,7 +699,7 @@ class User:
         Returns a string representation of the user with class name.
 
         Returns:
-            str: Stringified user data including class name.
+            str: String of user data including class name.
         """
         return str({'class': type(self).__name__, **self.to_dict()})
 
@@ -729,9 +775,23 @@ class Cashier(User):
         Returns a string representation of the cashier with class name.
 
         Returns:
-            str: Stringified cashier data including class name.
+            str: String of cashier data including class name.
         """
         return str({'class': type(self).__name__, **self.to_dict()})
+
+    @property
+    def database(self) -> Database:
+        return self._database
+
+    def set_database(self, database: Database | None):
+        if not isinstance(database, Database | None):
+            raise TypeError(f"Expected Database or None instance, got {type(Database).__name__}")
+        if self._database is not None:
+            self._database.remove_cashiers(self)
+        self._database = database
+        if database is not None:
+            if self not in self._database.cashiers:
+                database.add_cashiers(self)
 
 class Customer(User):
     """Represents a customer with phone number, cashback, and purchase history."""
@@ -774,7 +834,7 @@ class Customer(User):
         Returns a string representation of the customer including purchases.
 
         Returns:
-            str: Stringified customer data with class name and purchases.
+            str: String of customer data with class name and purchases.
         """
         return str({
             'class': type(self).__name__,
@@ -901,6 +961,20 @@ class Customer(User):
         earned_cashback = (order_amount * self._percent) // 100
         self._cashback += earned_cashback
 
+    @property
+    def database(self) -> Database:
+        return self._database
+
+    def set_database(self, database: Database | None):
+        if not isinstance(database, Database | None):
+            raise TypeError(f"Expected Database or None instance, got {type(Database).__name__}")
+        if self._database is not None:
+            self._database.remove_customers(self)
+        self._database = database
+        if database is not None:
+            if self not in self._database.customers:
+                database.add_customers(self)
+
 class ShoppingCart:
     def __init__(self, product: Product):
         """
@@ -918,8 +992,8 @@ class ShoppingCart:
         self._customer = None
         self._cashback = 0
         self._total = product.price
+        self._store = None
         self._database = None
-        self._shop = None
 
     def to_dict(self) -> dict:
         """
@@ -929,7 +1003,7 @@ class ShoppingCart:
             dict: Cart data including ID, cashier, customer, cashback, total, and shop.
         """
         return {'id': self._id, 'employee': self._cashier, 'customer': self._customer,
-                'cashback': self._cashback, 'total': self._total, 'shop': self._shop}
+                'cashback': self._cashback, 'total': self._total, 'store': self._store}
 
     def __str__(self):
         """
@@ -1088,7 +1162,8 @@ class ShoppingCart:
         pass
 
 if __name__ == "__main__":
-    store1 = Store("Store", "111 Main St")
+    db = Database("may_market")
+    store1 = Store("MAY-Market", "8a Kosmichna Street")
     category1 = Category("Food")
     category2 = Category("Clothing")
     product1 = Product("Sausage", 1050, 200)
