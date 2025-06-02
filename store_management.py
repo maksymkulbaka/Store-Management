@@ -1,3 +1,129 @@
+class Database:
+    def __init__(self, name: str):
+        self._name = name
+        self._stores = []
+        self._categories = []
+        self._products = []
+        self._cashiers = []
+        self._customers = []
+        self._purchases = []
+
+    @property
+    def stores(self) -> tuple:
+        return tuple(self._stores)
+
+    def add_stores(self, *stores: 'Store'):
+        for store in stores:
+            if not isinstance(store, Store):
+                raise TypeError(f"Expected Store instance, got {type(store).__name__}")
+        for store in stores:
+            if store not in self._stores:
+                self._stores.append(store)
+                store.set_database(self)
+
+    def remove_stores(self, *stores: 'Store'):
+        for store in stores:
+            if not isinstance(store, Store):
+                raise TypeError(f"Expected Store instance, got {type(store).__name__}")
+        for store in stores:
+            if store not in self._stores:
+                self._stores.remove(store)
+                store.set_database(None)
+
+    @property
+    def categories(self) -> tuple:
+        return tuple(self._categories)
+
+    def add_categories(self, *categories: 'Category'):
+        for category in categories:
+            if not isinstance(category, Category):
+                raise TypeError(f"Expected Category instance, got {type(category).__name__}")
+        for category in categories:
+            if category not in self._categories:
+                self._categories.append(category)
+                category.set_database(self)
+
+    def remove_categories(self, *categories: 'Category'):
+        for category in categories:
+            if not isinstance(category, Category):
+                raise TypeError(f"Expected Category instance, got {type(category).__name__}")
+        for category in categories:
+            if category not in self._categories:
+                self._categories.remove(category)
+                category.set_database(None)
+
+    @property
+    def products(self) -> tuple:
+        return tuple(self._products)
+
+    def add_products(self, *products: 'Product'):
+        for product in products:
+            if not isinstance(product, Product):
+                raise TypeError(f"Expected Product instance, got {type(product).__name__}")
+        for product in products:
+            if product not in self._products:
+                self._products.append(product)
+                product.set_database(self)
+
+    def remove_products(self, *products: 'Product'):
+        for product in products:
+            if not isinstance(product, Product):
+                raise TypeError(f"Expected Product instance, got {type(product).__name__}")
+        for product in products:
+            if product not in self._products:
+                self._products.remove(product)
+                product.set_database(None)
+
+    @property
+    def cashiers(self) -> tuple:
+        return tuple(self._cashiers)
+
+    def add_cashiers(self, *cashiers: 'Cashier'):
+        for cashier in cashiers:
+            if not isinstance(cashier, Cashier):
+                raise TypeError(f"Expected Cashier instance, got {type(cashier).__name__}")
+        for cashier in cashiers:
+            if cashier not in self._cashiers:
+                self._cashiers.append(cashier)
+                cashier.set_database(self)
+
+    def remove_cashiers(self, *cashiers: 'Cashier'):
+        for cashier in cashiers:
+            if not isinstance(cashier, Cashier):
+                raise TypeError(f"Expected Cashier instance, got {type(cashier).__name__}")
+        for cashier in cashiers:
+            if cashier not in self._cashiers:
+                self._cashiers.remove(cashier)
+                cashier.set_database(None)
+
+    @property
+    def customers(self) -> tuple:
+        return tuple(self._customers)
+
+    def add_customers(self, *customers: 'Customer'):
+        for customer in customers:
+            if not isinstance(customer, Customer):
+                raise TypeError(f"Expected Customer instance, got {type(customer).__name__}")
+        for customer in customers:
+            if customer not in self._customers:
+                self._customers.append(customer)
+                customer.set_database(self)
+
+    def remove_customers(self, *customers: 'Customer'):
+        for customer in customers:
+            if not isinstance(customer, Customer):
+                raise TypeError(f"Expected Customer instance, got {type(customer).__name__}")
+        for customer in customers:
+            if customer not in self._customers:
+                self._customers.remove(customer)
+                customer.set_database(None)
+
+    def find_customer_by_phone(self, phone):
+        for customer in self._customers:
+            if customer.phone == phone:
+                return customer
+        return False
+
 class Store:
     """Represents a Store structure containing Categories and Products."""
     def __init__(self, name: str, address: str):
