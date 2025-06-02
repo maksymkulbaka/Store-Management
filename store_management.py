@@ -625,7 +625,6 @@ class Customer(User):
         super().__init__(name, surname)
         if not isinstance(phone, int) or phone <= 0:
             raise ValueError("Phone must be a positive integer.")
-        super().__init__(name, surname)
         self._phone = phone
         self._cashback = 0
         self._percent = 1
@@ -757,8 +756,6 @@ class Customer(User):
         """
         if amount < 0:
             raise ValueError("Withdrawal amount must be non-negative.")
-        if amount <= self._cashback:
-            self._cashback -= amount
         if amount <= self._cashback:
             self._cashback -= amount
             return True
