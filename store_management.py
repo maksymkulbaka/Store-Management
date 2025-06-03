@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class Database:
     """Represents a centralized system to manage all entities related to a retail environment.
 
@@ -247,6 +249,49 @@ class Database:
             if customer.phone == phone:
                 return customer
         return False
+
+    @property
+    def purchases(self) -> tuple:
+        """Returns all registered Purchase instances.
+
+        Returns:
+            tuple: Tuple containing all Purchase instances in the database.
+        """
+        return tuple(self._purchases)
+
+    def add_purchases(self, *purchases: 'Purchase'):
+        """Add one or more Purchase instances to the database.
+
+        Args:
+            *purchases (Purchase): Variable number of Purchase instances to add.
+
+        Raises:
+            TypeError: If any argument is not a Purchase instance.
+        """
+        for purchase in purchases:
+            if not isinstance(purchase, Purchase):
+                raise TypeError(f"Expected Purchase instance, got {type(purchase).__name__}")
+        for purchase in purchases:
+            if purchase not in self._purchases:
+                self._purchases.append(purchase)
+                purchase.set_database(self)
+
+    def remove_purchases(self, *purchases: 'Purchase'):
+        """Remove one or more Purchase instances from the database.
+
+        Args:
+            *purchases (Purchase): Variable number of Purchase instances to remove.
+
+        Raises:
+            TypeError: If any argument is not a Purchase instance.
+        """
+        for purchase in purchases:
+            if not isinstance(purchase, Purchase):
+                raise TypeError(f"Expected Purchase instance, got {type(purchase).__name__}")
+        for purchase in purchases:
+            if purchase in self._purchases:
+                self._purchases.remove(purchase)
+                purchase.set_database(None)
 
 class Store:
     """Represents a Store structure containing Categories and Products."""
@@ -789,7 +834,7 @@ class Product:
 class User:
     """Represents a base user with name, surname, and optional ID."""
 
-    def __init__(self, name: str, surname: str):
+    def __init__(self, name: str, surname: str, phone: str):
         """
         Initializes a User instance.
 
@@ -804,10 +849,12 @@ class User:
             raise ValueError("Name must be a non-empty string.")
         if not isinstance(surname, str) or not surname.strip():
             raise ValueError("Surname must be a non-empty string.")
+        if not isinstance(phone, str) or not surname.strip():
+            raise ValueError("Phone must be a non-empty string.")
         self._id = None
         self._name = name
         self._surname = surname
-        self._database = None
+        self._phone = phone
 
     def to_dict(self) -> dict:
         """
@@ -883,8 +930,7 @@ class User:
 
 class Cashier(User):
     """Represents a cashier, inherited from User."""
-
-    def __init__(self, name: str, surname: str):
+    def __init__(self, name: str, surname: str, phone: str):
         """
         Initializes a Cashier instance.
 
@@ -892,7 +938,8 @@ class Cashier(User):
             name (str): The cashier's first name.
             surname (str): The cashier's last name.
         """
-        super().__init__(name, surname)
+        super().__init__(name, surname, phone)
+        self._database = None
 
     def __str__(self) -> str:
         """
@@ -919,8 +966,7 @@ class Cashier(User):
 
 class Customer(User):
     """Represents a customer with phone number, cashback, and purchase history."""
-
-    def __init__(self, name: str, surname: str, phone: int):
+    def __init__(self, name: str, surname: str, phone: str):
         """
         Initializes a Customer instance.
 
@@ -932,13 +978,11 @@ class Customer(User):
          Raises:
             ValueError: If phone is not a positive integer.
         """
-        super().__init__(name, surname)
-        if not isinstance(phone, int) or phone <= 0:
-            raise ValueError("Phone must be a positive integer.")
-        self._phone = phone
+        super().__init__(name, surname, phone)
         self._cashback = 0
         self._percent = 1
         self._purchases = []
+        self._database = None
 
     def to_dict(self) -> dict:
         """
@@ -998,14 +1042,14 @@ class Customer(User):
         """
         return self._purchases
 
-    def add_purchase(self, order):
+    def add_purchase(self, purchase):
         """
         Adds a new purchase to the customer's history.
 
         Args:
-            order: An order object or identifier to be added to purchases.
+            purchase: An order object or identifier to be added to purchases.
         """
-        self._purchases.append(order)
+        self._purchases.append(purchase)
 
     @property
     def cashback(self) -> int:
@@ -1100,7 +1144,7 @@ class Customer(User):
                 database.add_customers(self)
 
 class ShoppingCart:
-    def __init__(self, product: Product):
+    def __init__(self, product: Product, database: Database):
         """
         Initializes a shopping cart with a single product.
 
@@ -1109,12 +1153,13 @@ class ShoppingCart:
         """
         if not isinstance(product, Product):
             raise TypeError("product must be an instance of Product")
-
+        if not isinstance(database, Database):
+            raise TypeError("database must be an instance of Database")
         self._id = None
         self._products = [product]
         self._cashier = None
         self._customer = None
-        self._cashback = 0
+        self._used_cashback = 0
         self._total = product.price
         self._store = None
         self._database = None
@@ -1128,7 +1173,7 @@ class ShoppingCart:
             dict: Cart data including ID, cashier, customer, cashback, total, and shop.
         """
         return {'id': self._id, 'employee': self._cashier, 'customer': self._customer,
-                'cashback': self._cashback, 'total': self._total, 'store': self._store, 'status': self._status}
+                'used_cashback': self._used_cashback, 'total': self._total, 'store': self._store, 'status': self._status}
 
     def __str__(self):
         """
@@ -1193,14 +1238,14 @@ class ShoppingCart:
         return self._customer
 
     @property
-    def cashback(self) -> int:
+    def used_cashback(self) -> int:
         """
         Returns the cashback applied to the cart.
 
         Returns:
             int: Total cashback amount.
         """
-        return self._cashback
+        return self._used_cashback
 
     @property
     def total(self) -> int:
@@ -1267,7 +1312,7 @@ class ShoppingCart:
             raise ValueError("amount must be a positive integer")
 
         if self._customer and self._customer.withdraw_cashback(amount):
-            self._cashback += amount
+            self._used_cashback += amount
             self._total -= amount
             return True
         return False
@@ -1302,13 +1347,9 @@ class ShoppingCart:
                 product.quantity -= 1
 
             self._customer.accrue_cashback(self._total)
-
-            order_record = {
-                'products': [p.to_dict() for p in self._products],
-                'total': self._total,
-                'cashback_used': self._cashback
-            }
-            self._customer.add_purchase(order_record)
+            purchase = Purchase(self._store, self._products, self._cashier, self._customer, self._used_cashback)
+            self._customer.add_purchase(purchase)
+            self._database.add_purchase(purchase)
 
             self._status = "success"
             print("Payment successful.")
@@ -1318,6 +1359,122 @@ class ShoppingCart:
             self._status = "failed"
             print(f"Payment failed: {str(e)}")
             return False
+
+class Purchase:
+    """Represents a completed purchase made by a customer."""
+
+    def __init__(self, store: Store, products: list[Product], cashier: Cashier,
+                 customer: Customer, used_cashback: int):
+        """Initialize a Purchase instance.
+
+        Args:
+            customer (Customer): The customer who made the purchase.
+            products (list[Product]): List of purchased Product instances.
+
+        Raises:
+            TypeError: If inputs are not of correct types.
+            ValueError: If product list is empty or contains invalid products.
+        """
+        if not isinstance(store, Store):
+            raise TypeError(f"Expected Store instance, got {type(customer).__name__}")
+        if not isinstance(customer, Customer):
+            raise TypeError(f"Expected Customer instance, got {type(customer).__name__}")
+        if not isinstance(cashier, Cashier):
+            raise TypeError(f"Expected Cashier instance, got {type(customer).__name__}")
+        if not products:
+            raise ValueError("Products list cannot be empty.")
+        for product in products:
+            if not isinstance(product, Product):
+                raise TypeError(f"Expected Product in products list, got {type(product).__name__}")
+        if not isinstance(used_cashback, int) or used_cashback < 0:
+            raise ValueError("Cashback must be a non-negative integer.")
+        if used_cashback > customer.cashback:
+            raise ValueError("Cashback used exceeds available cashback.")
+
+        self._id = None
+        self._store = store
+        self._products = products
+        self._cashier = cashier
+        self._customer = customer
+        self._used_cashback = used_cashback
+        self._purchase_date = datetime.now()
+        self._total = sum(product.price for product in products)
+        self._database = None
+
+    @property
+    def id(self) -> int:
+        """int: The unique identifier of the purchase."""
+        return self._id
+
+    @property
+    def store(self) -> 'Store':
+        """The store where purchase was made"""
+        return self._store
+
+    @property
+    def products(self) -> tuple:
+        """tuple: Tuple of Product instances purchased."""
+        return tuple(self._products)
+
+    @property
+    def customer(self) -> 'Customer':
+        """Customer: The customer who made the purchase."""
+        return self._customer
+
+    @property
+    def used_cashback(self) -> int:
+        """int: The used cashback."""
+        return self._used_cashback
+
+    @property
+    def total(self) -> int:
+        """int: The total cost of the purchase."""
+        return self._total
+
+    @property
+    def purchase_date(self) -> datetime:
+        """datetime: The date and time the purchase was made."""
+        return self._purchase_date
+
+    def get_receipt(self) -> dict:
+        """Return a dictionary representation of the purchase.
+
+        Returns:
+            dict: Purchase data including customer, total, and product details.
+        """
+        return {
+            'id': self._id,
+            'store': self._store.to_dict(),
+            'cashier': self._cashier.to_dict(),
+            'customer': self._customer.to_dict(),
+            'products': [p.to_dict() for p in self._products],
+            'used_cashback': self._used_cashback,
+            'purchase_date': self._purchase_date.isoformat(),
+            'total': self._total
+        }
+
+    def __str__(self) -> str:
+        """Return a string representation of the purchase.
+
+        Returns:
+            str: Human-readable summary of the purchase.
+        """
+        return str(self.get_receipt())
+
+    @property
+    def database(self) -> Database:
+        return self._database
+
+    def set_database(self, database: Database | None):
+        if not isinstance(database, Database | None):
+            raise TypeError(f"Expected Database or None instance, got {type(Database).__name__}")
+        if self._database is not None:
+            self._database.remove_purchases(self)
+        self._database = database
+        if database is not None:
+            if self not in self._database.purchases:
+                database.add_purchases(self)
+
 
 if __name__ == "__main__":
     db = Database("may_market")
@@ -1330,7 +1487,7 @@ if __name__ == "__main__":
     store1.add_category(category1, category2)
     category1.add_product(product1)
     category2.add_product(product2)
-    cart = ShoppingCart(product1)
+    cart = ShoppingCart(product1, db)
 
     store1.add_product(product1, product2)
 
