@@ -1279,7 +1279,7 @@ class ShoppingCart:
         self._products.append(product)
         self._total += product.price
 
-    def add_customer(self, phone: int):
+    def add_customer(self, phone: str):
         """
         Searches for a customer by phone number and assigns them to the cart.
 
@@ -1289,8 +1289,8 @@ class ShoppingCart:
         Returns:
             bool: True if customer is found and assigned, False otherwise.
         """
-        if not isinstance(phone, int) or len(str(phone)) < 7:
-            raise ValueError("phone must be a valid integer phone number")
+        if not isinstance(phone, str) or len(str(phone)) < 7:
+            raise ValueError("phone must be a string phone number")
 
         for customer in self._database.customers:
             if customer.phone == phone:
@@ -1326,44 +1326,38 @@ class ShoppingCart:
             expiration_date (list): [month, year] of card expiration.
             cvv (int): Card verification value.
         """
-        try:
-            if not isinstance(card_number, int) or len(str(card_number)) < 13:
-                raise ValueError("Invalid card number")
-            if not (isinstance(expiration_date, list) and len(expiration_date) == 2):
-                raise ValueError("expiration_date must be a list of [month, year]")
-            if not (1 <= expiration_date[0] <= 12):
-                raise ValueError("Invalid expiration month")
-            if not isinstance(expiration_date[1], int) or expiration_date[1] < 2000:
-                raise ValueError("Invalid expiration year")
-            if not isinstance(cvv, int) or len(str(cvv)) != 3:
-                raise ValueError("CVV must be a 3-digit integer")
+        if not isinstance(card_number, int) or len(str(card_number)) < 13:
+            raise ValueError("Invalid card number")
+        if not (isinstance(expiration_date, list) and len(expiration_date) == 2):
+            raise ValueError("expiration_date must be a list of [month, year]")
+        if not (1 <= expiration_date[0] <= 12):
+            raise ValueError("Invalid expiration month")
+        if not isinstance(expiration_date[1], int) or expiration_date[1] < 2000:
+            raise ValueError("Invalid expiration year")
+        if not isinstance(cvv, int) or len(str(cvv)) != 3:
+            raise ValueError("CVV must be a 3-digit integer")
 
-            if not self._customer:
-                raise ValueError("No customer assigned to the cart.")
+        if not self._customer:
+            raise ValueError("No customer assigned to the cart.")
 
-            for product in self._products:
-                if product.quantity < 1:
-                    raise ValueError(f"Product {product.name} is out of stock.")
-                product.quantity -= 1
+        for product in self._products:
+            if product.quantity < 1:
+                raise ValueError(f"Product {product.name} is out of stock.")
+            product.quantity -= 1
 
-            self._customer.accrue_cashback(self._total)
-            purchase = Purchase(self._store, self._products, self._cashier, self._customer, self._used_cashback)
-            self._customer.add_purchase(purchase)
-            self._database.add_purchase(purchase)
+        self._customer.accrue_cashback(self._total)
+        purchase = Purchase(self._products, self._cashier, self._customer, self._used_cashback)
+        self._customer.add_purchase(purchase)
+        self._database.add_purchases(purchase)
 
-            self._status = "success"
-            print("Payment successful.")
-            return True
+        self._status = "success"
+        return True
 
-        except Exception as e:
-            self._status = "failed"
-            print(f"Payment failed: {str(e)}")
-            return False
 
 class Purchase:
     """Represents a completed purchase made by a customer."""
 
-    def __init__(self, store: Store, products: list[Product], cashier: Cashier,
+    def __init__(self, products: list[Product], cashier: Cashier,
                  customer: Customer, used_cashback: int):
         """Initialize a Purchase instance.
 
@@ -1375,8 +1369,6 @@ class Purchase:
             TypeError: If inputs are not of correct types.
             ValueError: If product list is empty or contains invalid products.
         """
-        if not isinstance(store, Store):
-            raise TypeError(f"Expected Store instance, got {type(customer).__name__}")
         if not isinstance(customer, Customer):
             raise TypeError(f"Expected Customer instance, got {type(customer).__name__}")
         if not isinstance(cashier, Cashier):
@@ -1386,13 +1378,8 @@ class Purchase:
         for product in products:
             if not isinstance(product, Product):
                 raise TypeError(f"Expected Product in products list, got {type(product).__name__}")
-        if not isinstance(used_cashback, int) or used_cashback < 0:
-            raise ValueError("Cashback must be a non-negative integer.")
-        if used_cashback > customer.cashback:
-            raise ValueError("Cashback used exceeds available cashback.")
 
         self._id = None
-        self._store = store
         self._products = products
         self._cashier = cashier
         self._customer = customer
@@ -1444,7 +1431,6 @@ class Purchase:
         """
         return {
             'id': self._id,
-            'store': self._store.to_dict(),
             'cashier': self._cashier.to_dict(),
             'customer': self._customer.to_dict(),
             'products': [p.to_dict() for p in self._products],
