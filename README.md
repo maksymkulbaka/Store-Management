@@ -10,6 +10,49 @@ import store_management
 ```
 + Done! Now you can work with the module.
    
+# Features
++ Management of stores, categories, and products.
++ Registration of customers and cashiers.
++ Ability to make purchases with cashback.
++ Payment processing (simulation).
++ Output of information in the form of dictionaries or readable lines.
+
+# Data verification  
+## This module implements verification of the correctness of the entered data.
+
+**1).** Type Checking  
+Use `isinstance()` to check if an object has the correct type:
+```py
+if not isinstance(name, str):
+    raise TypeError("Name must be a string.")
+```  
++ This is in class constructors: `Store`, `Category`, `Product`, `User`, `Customer`, `ShoppingCart`
++ addition methods (`add_product`, `add_category`, `add_customer`)
+---
+**2).** Checking logical constraints  
+```py
+if not name.strip():
+    raise ValueError("Name must be a non-empty string.")
+if phone <= 0:
+    raise ValueError("Phone must be a positive integer.")
+if not (0 <= percent <= 100):
+    raise ValueError("Percent must be an integer between 0 and 100.")
+```
+---
+**3).** Data structure verification  
+In the `make_payment method`:
+```py
+if not (isinstance(expiration_date, list) and len(expiration_date) == 2):
+    raise ValueError("expiration_date must be a list of [month, year]")
+```
+---
+**4).** Error handling  
+In the `make_payment method`, the entire block is enclosed in `try`/`except` to prevent the program from crashing:
+```py
+except Exception as e:
+    self._status = "failed"
+    print(f"Payment failed: {str(e)}")
+```  
 # Class Documentation
 Class and its methods are fully documented with clear Python docstrings, following practices for easy understanding and use.
    
